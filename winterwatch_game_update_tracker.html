@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10131b">
+  <meta name="description" content="A personal tracker for Christmas and winter updates across your favourite games.">
+  <title>WinterWatch — Game Update Tracker</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0e14;
+      --panel: #141a24;
+      --panel-2: #1a2230;
+      --line: #293344;
+      --text: #f3f6fb;
+      --muted: #9aa8ba;
+      --red: #ff5268;
+      --green: #65d6a2;
+      --gold: #f5c96a;
+      --blue: #83b8ff;
+      --radius: 18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 80% -10%, rgba(57, 104, 145, .22), transparent 42%),
+        radial-gradient(ellipse at 0% 10%, rgba(180, 54, 75, .13), transparent 35%),
+        var(--bg);
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1120px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 48px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 24px; }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      width: 44px; height: 44px; display: grid; place-items: center; flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.14); border-radius: 14px;
+      background: linear-gradient(145deg, #9c3045, #273d5d); font-size: 22px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.25);
+    }
+    h1 { margin: 0; font-size: clamp(1.2rem, 4vw, 1.65rem); letter-spacing: -.04em; }
+    .brand p { margin: 3px 0 0; color: var(--muted); font-size: .8rem; }
+    .header-chip { color: #c8d6e8; border: 1px solid var(--line); border-radius: 999px; padding: 8px 11px; font-size: .72rem; white-space: nowrap; background: rgba(20,26,36,.7); }
+    .hero {
+      position: relative; overflow: hidden; padding: 25px 22px; border: 1px solid #35445a; border-radius: 24px;
+      background: linear-gradient(115deg, rgba(45,61,82,.96), rgba(35,35,51,.96) 55%, rgba(86,38,54,.86));
+      box-shadow: 0 18px 50px rgba(0,0,0,.2); margin-bottom: 18px;
+    }
+    .hero:after { content: "❄"; position: absolute; right: 22px; top: -25px; font-size: 150px; color: rgba(255,255,255,.07); pointer-events: none; }
+    .eyebrow { color: #b7d8ff; text-transform: uppercase; letter-spacing: .14em; font-size: .68rem; font-weight: 800; }
+    .hero h2 { position: relative; z-index: 1; margin: 9px 0 8px; max-width: 650px; font-size: clamp(1.7rem, 6vw, 2.65rem); line-height: 1.05; letter-spacing: -.055em; }
+    .hero p { position: relative; z-index: 1; max-width: 610px; margin: 0; color: #d1d9e5; font-size: .92rem; line-height: 1.6; }
+    .hero-actions { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; }
+    .btn { border: 1px solid transparent; border-radius: 11px; padding: 10px 14px; font-weight: 750; font-size: .82rem; transition: transform .15s, filter .15s; }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+    .btn-primary { color: #17121a; background: #f4c96d; }
+    .btn-secondary { color: var(--text); border-color: #526178; background: rgba(13,18,27,.45); }
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+    .stat { padding: 15px; border: 1px solid var(--line); border-radius: 15px; background: rgba(20,26,36,.86); }
+    .stat .label { color: var(--muted); font-size: .72rem; }
+    .stat strong { display: block; margin-top: 5px; font-size: 1.55rem; letter-spacing: -.04em; }
+    .stat small { color: var(--muted); font-size: .7rem; }
+    .toolbar { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 13px; }
+    .search-wrap { position: relative; flex: 1; }
+    .search-wrap span { position: absolute; top: 50%; left: 13px; transform: translateY(-50%); color: var(--muted); }
+    input, select, textarea {
+      width: 100%; color: var(--text); background: #111722; border: 1px solid var(--line);
+      border-radius: 11px; padding: 11px 12px; outline: none;
+    }
+    .search-wrap input { padding-left: 38px; }
+    input:focus, select:focus, textarea:focus { border-color: #83b8ff; box-shadow: 0 0 0 3px rgba(131,184,255,.12); }
+    select { cursor: pointer; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 24px 0 12px; }
+    .section-heading h3 { margin: 0; font-size: 1.05rem; letter-spacing: -.02em; }
+    .section-heading p { margin: 4px 0 0; color: var(--muted); font-size: .75rem; }
+    .game-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .game-card { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(150deg, rgba(24,32,45,.98), rgba(17,23,33,.98)); }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .game-ident { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .game-icon { width: 44px; height: 44px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 13px; background: #273448; font-size: 23px; }
+    .game-ident h4 { margin: 0; font-size: .98rem; overflow-wrap: anywhere; }
+    .game-ident p { margin: 4px 0 0; color: var(--muted); font-size: .72rem; }
+    .status { display: inline-flex; align-items: center; gap: 5px; padding: 6px 8px; border-radius: 999px; font-size: .65rem; font-weight: 800; white-space: nowrap; }
+    .status-upcoming { color: #f6d88f; background: rgba(245,201,106,.12); }
+    .status-live { color: #85e4b6; background: rgba(101,214,162,.12); }
+    .status-ended { color: #b4c0cf; background: rgba(154,168,186,.12); }
+    .event-title { margin: 17px 0 5px; font-size: .9rem; font-weight: 800; }
+    .event-note { min-height: 35px; margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.5; }
+    .countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 14px 0; }
+    .time-box { text-align: center; padding: 9px 3px; border-radius: 10px; background: #0d131d; border: 1px solid #253143; }
+    .time-box strong { display: block; font-size: 1.08rem; font-variant-numeric: tabular-nums; }
+    .time-box span { color: var(--muted); font-size: .58rem; text-transform: uppercase; letter-spacing: .07em; }
+    .date-line { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: .7rem; }
+    .card-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #263143; }
+    .mini-btn { color: #dbe5f2; background: #202b3b; border: 1px solid #35445a; border-radius: 9px; padding: 7px 10px; font-size: .7rem; font-weight: 700; }
+    .mini-btn.danger { color: #ff9baa; }
+    .empty { padding: 28px 16px; text-align: center; border: 1px dashed #3a4658; border-radius: var(--radius); color: var(--muted); }
+    .empty strong { display: block; color: var(--text); margin-bottom: 5px; }
+    .tips { display: grid; gap: 10px; margin-top: 22px; }
+    .tip { display: flex; gap: 11px; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: rgba(20,26,36,.65); }
+    .tip b { display: block; font-size: .78rem; margin-bottom: 3px; }
+    .tip p { margin: 0; color: var(--muted); font-size: .72rem; line-height: 1.45; }
+    footer { margin-top: 28px; padding-top: 15px; border-top: 1px solid var(--line); color: var(--muted); font-size: .68rem; line-height: 1.6; }
+    dialog { width: min(480px, calc(100% - 24px)); max-height: 90vh; overflow: auto; color: var(--text); background: #151c28; border: 1px solid #3a4a61; border-radius: 18px; padding: 20px; box-shadow: 0 25px 90px #000b; }
+    dialog::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
+    dialog h3 { margin: 0 0 5px; }
+    .form-subtitle { margin: 0 0 17px; color: var(--muted); font-size: .76rem; }
+    .form-grid { display: grid; gap: 12px; }
+    .field label { display: block; margin-bottom: 6px; color: #cbd6e4; font-size: .73rem; font-weight: 700; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .close-x { float: right; color: var(--muted); background: none; border: 0; font-size: 1.3rem; }
+    .notice { margin-top: 12px; color: var(--muted); font-size: .68rem; }
+    @media (min-width: 620px) {
+      .shell { width: min(1120px, calc(100% - 44px)); padding-top: 30px; }
+      .hero { padding: 34px; }
+      .stats { grid-template-columns: repeat(4, 1fr); }
+      .toolbar { flex-direction: row; }
+      .toolbar select { width: 190px; }
+      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tips { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 960px) {
+      .game-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">❄️</div>
+        <div><h1>WinterWatch</h1><p>Your seasonal game update tracker</p></div>
+      </div>
+      <div class="header-chip">🎄 WINTER EDITION</div>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="eyebrow">One place for every winter event</div>
+      <h2 id="hero-title">Don't miss the next<br>holiday update.</h2>
+      <p>Keep an eye on Christmas events, winter maps, limited-time rewards and seasonal updates across your favourite games.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="addTopBtn">＋ Add a game</button>
+        <button class="btn btn-secondary" id="jumpBtn">View my tracker ↓</button>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Tracker overview">
+      <div class="stat"><div class="label">TRACKED GAMES</div><strong id="statGames">0</strong><small>In your watchlist</small></div>
+      <div class="stat"><div class="label">UPCOMING</div><strong id="statUpcoming">0</strong><small>Events with a future date</small></div>
+      <div class="stat"><div class="label">LIVE NOW</div><strong id="statLive">0</strong><small>Events happening now</small></div>
+      <div class="stat"><div class="label">DATE TO BE CONFIRMED</div><strong id="statTba">0</strong><small>Waiting for an announcement</small></div>
+    </section>
+
+    <section id="tracker" aria-labelledby="tracker-title">
+      <div class="section-heading">
+        <div><h3 id="tracker-title">Your game watchlist</h3><p>Dates are editable — check official game channels for announcements.</p></div>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Search games or events..." aria-label="Search games or events"></div>
+        <select id="filterSelect" aria-label="Filter games">
+          <option value="all">All events</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="live">Live now</option>
+          <option value="tba">Date TBA</option>
+          <option value="ended">Ended</option>
+        </select>
+        <button class="btn btn-secondary" id="addInlineBtn">＋ Add</button>
+      </div>
+      <div class="game-grid" id="gameGrid" aria-live="polite"></div>
+    </section>
+
+    <section>
+      <div class="section-heading"><div><h3>Tracker tips</h3><p>Keep your watchlist accurate and useful.</p></div></div>
+      <div class="tips">
+        <div class="tip"><span>📅</span><div><b>Add confirmed dates</b><p>Leave the date blank until the game's official channels announce one.</p></div></div>
+        <div class="tip"><span>🔔</span><div><b>Check official sources</b><p>Use the game's official website or verified social accounts for updates.</p></div></div>
+        <div class="tip"><span>💾</span><div><b>Your list stays on this device</b><p>WinterWatch saves changes in this browser using local storage.</p></div></div>
+      </div>
+    </section>
+
+    <footer>
+      WinterWatch is an independent fan-made tracker and is not affiliated with Roblox, Rockstar Games, Epic Games or the games listed. Game names and trademarks belong to their respective owners. Event dates are user-editable and are not automatically verified.
+    </footer>
+  </main>
+
+  <dialog id="gameDialog">
+    <button class="close-x" id="closeDialog" aria-label="Close dialog">×</button>
+    <h3 id="dialogTitle">Add a game</h3>
+    <p class="form-subtitle">Add a seasonal event to your personal watchlist.</p>
+    <form id="gameForm">
+      <div class="form-grid">
+        <div class="field"><label for="gameName">Game name *</label><input id="gameName" name="gameName" maxlength="60" required placeholder="e.g. Bee Swarm Simulator"></div>
+        <div class="field"><label for="gameIcon">Emoji icon</label><input id="gameIcon" name="gameIcon" maxlength="8" value="🎮" placeholder="🎮"></div>
+        <div class="field"><label for="eventName">Update / event name *</label><input id="eventName" name="eventName" maxlength="80" required placeholder="e.g. Christmas / Winter Update"></div>
+        <div class="field"><label for="eventDate">Start date and time (optional)</label><input id="eventDate" name="eventDate" type="datetime-local"></div>
+        <div class="field"><label for="eventEnd">End date and time (optional)</label><input id="eventEnd" name="eventEnd" type="datetime-local"></div>
+        <div class="field"><label for="eventStatus">Status</label><select id="eventStatus" name="eventStatus"><option value="auto">Automatic (based on dates)</option><option value="tba">Date TBA</option><option value="upcoming">Upcoming</option><option value="live">Live now</option><option value="ended">Ended</option></select></div>
+        <div class="field"><label for="eventLink">Official update link (optional)</label><input id="eventLink" name="eventLink" type="url" placeholder="https://..."></div>
+        <div class="field"><label for="eventNotes">Notes (optional)</label><textarea id="eventNotes" name="eventNotes" rows="3" maxlength="240" placeholder="Rewards, features, expected content..."></textarea></div>
+      </div>
+      <p class="notice">Tip: choose “Date TBA” if the developer hasn't announced a date yet. Times use your device's local timezone.</p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" id="cancelDialog">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save event</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const STORAGE_KEY = "winterwatch-games-v1";
+    const starterGames = [
+      { id: "bee-swarm", name: "Bee Swarm Simulator", icon: "🐝", event: "Christmas / Beesmas Event", start: "", end: "", status: "tba", link: "https://www.roblox.com/games/1537690962/Bee-Swarm-Simulator", notes: "Add the event dates and details when officially announced." },
+      { id: "gta-online", name: "GTA Online", icon: "🚗", event: "Festive Surprise / Winter Event", start: "", end: "", status: "tba", link: "https://www.rockstargames.com/newswire", notes: "Watch official Rockstar Newswire announcements for seasonal content." },
+      { id: "fortnite", name: "Fortnite", icon: "🎯", event: "Winterfest", start: "", end: "", status: "tba", link: "https://www.fortnite.com/news", notes: "Add the confirmed Winterfest dates and any rewards you want to track." }
+    ];
+
+    let games = loadGames();
+    let editingId = null;
+
+    function loadGames() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : structuredClone(starterGames);
+      } catch {
+        return structuredClone(starterGames);
+      }
+    }
+    function saveGames() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+    }
+    function getStatus(game) {
+      if (game.status && game.status !== "auto") return game.status;
+      if (!game.start) return "tba";
+      const now = Date.now();
+      const start = new Date(game.start).getTime();
+      const end = game.end ? new Date(game.end).getTime() : null;
+      if (Number.isNaN(start)) return "tba";
+      if (now < start) return "upcoming";
+      if (end && now > end) return "ended";
+      return "live";
+    }
+    function formatDate(value) {
+      if (!value) return "Date TBA";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Date TBA";
+      return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date);
+    }
+    function countdownMarkup(game) {
+      if (!game.start || getStatus(game) !== "upcoming") {
+        return `<div class="countdown"><div class="time-box"><strong>—</strong><span>Days</span></div><div class="time-box"><strong>—</strong><span>Hours</span></div><div class="time-box"><strong>—</strong><span>Mins</span></div><div class="time-box"><strong>—</strong><span>Secs</span></div></div>`;
+      }
+      const diff = Math.max(0, new Date(game.start).getTime() - Date.now());
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      return `<div class="countdown">
+        <div class="time-box"><strong>${days}</strong><span>Days</span></div>
+        <div class="time-box"><strong>${String(hours).padStart(2,"0")}</strong><span>Hours</span></div>
+        <div class="time-box"><strong>${String(mins).padStart(2,"0")}</strong><span>Mins</span></div>
+        <div class="time-box"><strong>${String(secs).padStart(2,"0")}</strong><span>Secs</span></div>
+      </div>`;
+    }
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
+    }
+    function safeLink(value) {
+      try {
+        const url = new URL(value);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+      } catch { return ""; }
+    }
+    function render() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      const filter = document.getElementById("filterSelect").value;
+      const statuses = games.map(getStatus);
+      document.getElementById("statGames").textContent = games.length;
+      document.getElementById("statUpcoming").textContent = statuses.filter(s => s === "upcoming").length;
+      document.getElementById("statLive").textContent = statuses.filter(s => s === "live").length;
+      document.getElementById("statTba").textContent = statuses.filter(s => s === "tba").length;
+
+      const visible = games.filter(game => {
+        const status = getStatus(game);
+        const matchesQuery = `${game.name} ${game.event} ${game.notes}`.toLowerCase().includes(query);
+        const matchesFilter = filter === "all" || status === filter;
+        return matchesQuery && matchesFilter;
+      });
+      const grid = document.getElementById("gameGrid");
+      if (!visible.length) {
+        grid.innerHTML = `<div class="empty"><strong>No matching events found</strong>Try another search or add a game to your watchlist.</div>`;
+        return;
+      }
+      grid.innerHTML = visible.map(game => {
+        const status = getStatus(game);
+        const statusLabel = { upcoming: "UPCOMING", live: "LIVE NOW", ended: "ENDED", tba: "DATE TBA" }[status];
+        const statusClass = `status-${status}`;
+        const link = safeLink(game.link);
+        return `<article class="game-card">
+          <div class="card-top">
+            <div class="game-ident">
+              <div class="game-icon" aria-hidden="true">${escapeHTML(game.icon || "🎮")}</div>
+              <div><h4>${escapeHTML(game.name)}</h4><p>Game update tracker</p></div>
+            </div>
+            <span class="status ${statusClass}">● ${statusLabel}</span>
+          </div>
+          <div class="event-title">${escapeHTML(game.event)}</div>
+          <p class="event-note">${escapeHTML(game.notes || "No notes added yet.")}</p>
+          ${countdownMarkup(game)}
+          <div class="date-line"><span>Starts</span><strong>${escapeHTML(formatDate(game.start))}</strong></div>
+          ${game.end ? `<div class="date-line" style="margin-top:5px"><span>Ends</span><strong>${escapeHTML(formatDate(game.end))}</strong></div>` : ""}
+          <div class="card-actions">
+            <button class="mini-btn" data-action="edit" data-id="${escapeHTML(game.id)}">✎ Edit</button>
+            <button class="mini-btn danger" data-action="delete" data-id="${escapeHTML(game.id)}">Remove</button>
+            ${link ? `<a class="mini-btn" href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer">Official source ↗</a>` : ""}
+          </div>
+        </article>`;
+      }).join("");
+    }
+
+    const dialog = document.getElementById("gameDialog");
+    const form = document.getElementById("gameForm");
+    function openDialog(game = null) {
+      editingId = game ? game.id : null;
+      form.reset();
+      document.getElementById("dialogTitle").textContent = game ? "Edit event" : "Add a game";
+      if (game) {
+        document.getElementById("gameName").value = game.name || "";
+        document.getElementById("gameIcon").value = game.icon || "🎮";
+        document.getElementById("eventName").value = game.event || "";
+        document.getElementById("eventDate").value = game.start || "";
+        document.getElementById("eventEnd").value = game.end || "";
+        document.getElementById("eventStatus").value = game.status || "auto";
+        document.getElementById("eventLink").value = game.link || "";
+        document.getElementById("eventNotes").value = game.notes || "";
+      } else {
+        document.getElementById("gameIcon").value = "🎮";
+        document.getElementById("eventStatus").value = "auto";
+      }
+      dialog.showModal();
+      document.getElementById("gameName").focus();
+    }
+    function closeDialog() { dialog.close(); }
+    document.getElementById("addTopBtn").addEventListener("click", () => openDialog());
+    document.getElementById("addInlineBtn").addEventListener("click", () => openDialog());
+    document.getElementById("jumpBtn").addEventListener("click", () => document.getElementById("tracker").scrollIntoView({ behavior: "smooth" }));
+    document.getElementById("closeDialog").addEventListener("click", closeDialog);
+    document.getElementById("cancelDialog").addEventListener("click", closeDialog);
+    dialog.addEventListener("click", event => { if (event.target === dialog) closeDialog(); });
+    document.getElementById("searchInput").addEventListener("input", render);
+    document.getElementById("filterSelect").addEventListener("change", render);
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const start = data.get("eventDate") || "";
+      const end = data.get("eventEnd") || "";
+      if (start && end && new Date(end) <= new Date(start)) {
+        alert("The end date must be later than the start date.");
+        return;
+      }
+      const item = {
+        id: editingId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+        name: data.get("gameName").trim(),
+        icon: data.get("gameIcon").trim() || "🎮",
+        event: data.get("eventName").trim(),
+        start,
+        end,
+        status: data.get("eventStatus"),
+        link: data.get("eventLink").trim(),
+        notes: data.get("eventNotes").trim()
+      };
+      if (editingId) games = games.map(game => game.id === editingId ? item : game);
+      else games.unshift(item);
+      saveGames();
+      closeDialog();
+      render();
+    });
+
+    document.getElementById("gameGrid").addEventListener("click", event => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const game = games.find(item => item.id === button.dataset.id);
+      if (!game) return;
+      if (button.dataset.action === "edit") openDialog(game);
+      if (button.dataset.action === "delete") {
+        if (confirm(`Remove ${game.name} from your tracker?`)) {
+          games = games.filter(item => item.id !== game.id);
+          saveGames();
+          render();
+        }
+      }
+    });
+
+    render();
+    setInterval(render, 1000);
+  </script>
+</body>
+</html>
